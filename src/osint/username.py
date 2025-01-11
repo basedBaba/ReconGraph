@@ -71,8 +71,8 @@ class Sagemode:
         time = current_datetime.strftime("%I:%M %p")
         headers = {"User-Agent": random.choice(user_agents)}
 
-        with open(self.result_file, "a") as file:
-            file.write(json.dumps({"date": date, "time": time, "results": []}, indent=4))
+        # with open(self.result_file, "a") as file:
+        #     file.write(json.dumps({"date": date, "time": time, "results": []}, indent=4))
 
         threads = []
 
@@ -84,10 +84,10 @@ class Sagemode:
             for thread in threads:
                 thread.join()
 
-            with open(self.result_file, "w") as f:
-                json.dump(self.results, f, indent=4)
+            # with open(self.result_file, "w") as f:
+            #     json.dump(self.results, f, indent=4)
 
-            print(f"Search complete. Results saved to {self.result_file}")
+            # print(f"Search complete. Results saved to {self.result_file}")
 
         except Exception:
             raise Exception(e)
