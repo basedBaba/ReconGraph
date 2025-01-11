@@ -27,4 +27,4 @@ def ipapi(ip_addr):
 
     return response
 
-print(ipapi("208.80.152.201"))
+print(ipapi("198.98.51.189"))
