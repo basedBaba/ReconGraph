@@ -24,7 +24,6 @@ sites = {
     "Dribbble": "https://dribbble.com/{}",
     "Stack Overflow": "https://stackoverflow.com/users/{}",
     # Creative & Multimedia Platforms
-    "Pinterest": "https://www.pinterest.com/{}",
     "DeviantArt": "https://{}.deviantart.com",
     "Patreon": "https://www.patreon.com/{}",
     "Flickr": "https://www.flickr.com/people/{}",
