@@ -1,10 +1,12 @@
 import tempfile
 
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 from capa import capa
 
 app = Flask(__name__)
+CORS(app)
 
 
 @app.route("/capa_analyze", methods=["POST"])
