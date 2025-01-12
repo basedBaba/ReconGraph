@@ -7,50 +7,56 @@ def capa(file):
 
     results = {}
 
-    with open("results.json", "r", encoding="utf-8") as file:
-        results = json.load(file)
+    try:
+        with open("results.json", "r", encoding="utf-8") as file:
+            results = json.load(file)
 
-    mitre = []
+        mitre = []
 
-    for rule in results["rules"]:
-        description = results["rules"][rule]["source"]
+        for rule in results["rules"]:
+            description = results["rules"][rule]["source"]
 
-        if "att&ck" in description:
-            lines = description.splitlines()
+            if "att&ck" in description:
+                lines = description.splitlines()
 
-            for i, line in enumerate(lines):
-                if line.strip().startswith("att&ck:"):
-                    attack_content = lines[i + 1].strip("- ").strip()
-                    mitre.append(attack_content)
-                    break
+                for i, line in enumerate(lines):
+                    if line.strip().startswith("att&ck:"):
+                        attack_content = lines[i + 1].strip("- ").strip()
+                        mitre.append(attack_content)
+                        break
 
-    unique_mitre = []
-    seen = set()
+        unique_mitre = []
+        seen = set()
 
-    for attack in mitre:
-        if attack not in seen:
-            unique_mitre.append(attack)
-            seen.add(attack)
+        for attack in mitre:
+            if attack not in seen:
+                unique_mitre.append(attack)
+                seen.add(attack)
 
-    unique_mitre.sort()
+        unique_mitre.sort()
 
-    results = {}
+        results = {}
 
-    for attack in unique_mitre:
-        parts = attack.split("::", 1)
+        for attack in unique_mitre:
+            parts = attack.split("::", 1)
 
-        key = parts[0]
-        value = parts[1]
+            key = parts[0]
+            value = parts[1]
 
-        technique = value.split()[-1]
-        technique = technique.strip("[]")
-        technique = technique.replace(".", "/")
+            technique = value.split()[-1]
+            technique = technique.strip("[]")
+            technique = technique.replace(".", "/")
 
-        link = f"https://attack.mitre.org/techniques/{technique}"
+            link = f"https://attack.mitre.org/techniques/{technique}"
 
-        if key not in results:
-            results[key] = []
+            if key not in results:
+                results[key] = []
 
-        results[key].append({value: link})
+            results[key].append({value: link})
 
-    return results
+        if results:
+            return results
+
+        return {"error": "analysis did not yield any result for the given file"}
+    except:
+        return {"error": "unsupported file format"}
