@@ -5,7 +5,7 @@ import requests
 database_location = "media/talos.txt"
 
 def talos(query: str):
-        result = {"found": False}
+        result = {"blacklisted": False}
         if not os.path.isfile(database_location):
             if not update():
                 raise Exception("Failed extraction of talos db")
@@ -20,7 +20,7 @@ def talos(query: str):
 
         db_list = db.split("\n")
         if query in db_list:
-            result["found"] = True
+            result["blacklisted"] = True
 
         return result
 

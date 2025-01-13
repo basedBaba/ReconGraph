@@ -139,7 +139,7 @@ sites = {
     "YouPic": "https://youpic.com/photographer/{}",
     "Unsplash": "https://unsplash.com/@{}",
     "Ultimate-Guitar": "https://ultimate-guitar.com/u/{}",
-    "TryHackMe": "https://tryhackme.com/p/{}",
+    # "TryHackMe": "https://tryhackme.com/p/{}",
     "Trello": "https://trello.com/{}",
     "Trakt": "https://www.trakt.tv/users/{}",
     "Periscope": "https://www.periscope.tv/{}",

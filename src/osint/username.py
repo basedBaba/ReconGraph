@@ -14,7 +14,7 @@ from argparse import ArgumentParser
 
 from bs4 import BeautifulSoup
 
-from sites import sites, soft404_indicators, user_agents
+from .sites import sites, soft404_indicators, user_agents
 
 
 class Sagemode:
