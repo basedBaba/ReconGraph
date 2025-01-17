@@ -4,3 +4,5 @@ pycti
 logger
 python-dotenv
 bs4
+flask_cors
+groclake
