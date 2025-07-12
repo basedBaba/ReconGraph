@@ -2,7 +2,7 @@ import os
 
 import requests
 
-database_location = "media/talos.txt"
+database_location = "src/media/talos.txt" 
 
 def talos(query: str):
         result = {"blacklisted": False}

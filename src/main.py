@@ -17,16 +17,9 @@ import tempfile
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from groclake.modellake import ModelLake
 from dotenv import load_dotenv
 
 load_dotenv()
-
-GROCLAKE_API_KEY = os.getenv('GROCLAKE_API_KEY')
-GROCLAKE_ACCOUNT_ID = os.getenv('GROCLAKE_ACCOUNT_ID')
-
-# Initialize ModelLake instance
-model_lake = ModelLake()
 
 # Initialize conversation history
 conversation_history = [
@@ -148,31 +141,6 @@ def upload_file():
         capa_results = capa(temp_file_path)
 
         return capa_results
-    
-@app.route('/chat', methods=['POST'])
-def chat():
-    """Simple chat endpoint"""
-    user_message = request.json.get('message')
-    
-    if not user_message:
-        return jsonify({'error': 'Message is required'}), 400
-    
-    # Add user message to history
-    conversation_history.append({"role": "user", "content": user_message})
-    
-    try:
-        # Get response from model
-        payload = {"messages": conversation_history}
-        response = model_lake.chat_complete(payload)
-        bot_reply = response.get("answer", "I'm sorry, I couldn't process that. Please try again.")
-        
-        # Add bot response to history
-        conversation_history.append({"role": "assistant", "content": bot_reply})
-        
-        return jsonify({'response': bot_reply})
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)

@@ -2,7 +2,7 @@ import os
 import requests
 import re
 
-database_location = "media/tor.txt"
+database_location = "src/media/tor.txt"
 
 def tor(query:str):
     result = {"found": False}
