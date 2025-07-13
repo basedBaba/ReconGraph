@@ -1,62 +1,98 @@
 import json
-import os
-
+import subprocess
+import traceback
 
 def capa(file):
-    os.system(f"./capa/dist/capa {file} -j > results.json")
-
-    results = {}
+    print(f"[INFO] Running CAPA on: {file}")
 
     try:
-        with open("results.json", "r", encoding="utf-8") as file:
-            results = json.load(file)
+        result = subprocess.run(
+            ["capa", file, "-r", "./capa-rules", "-j", "-s", "./capa-sigs"],
+            capture_output=True,
+            text=True,
+            check=False
+        )
+        if result.stderr:
+            print(f"[DEBUG] CAPA stderr:\n{result.stderr}")
 
-        mitre = []
+        if not result.stdout or not result.stdout.strip():
+            return {"error": "No output from CAPA command"}
+        try:
+            results = json.loads(result.stdout)
+        except json.JSONDecodeError:
+            print("[ERROR] Failed to parse CAPA output as JSON")
+            print(f"[DEBUG] Raw stdout that failed parsing:\n{result.stdout}")
+            return {"error": "Failed to parse CAPA output as JSON"}
 
-        for rule in results["rules"]:
-            description = results["rules"][rule]["source"]
+        if "rules" not in results:
+            print("[WARN] 'rules' not found in CAPA output")
+            return {"error": "No rules found in analysis results"}
+        
+        print(f"[INFO] results loaded with {len(results['rules'])} rules")
 
-            if "att&ck" in description:
-                lines = description.splitlines()
+        matched_rules = sum(1 for rule in results["rules"].values() if rule.get("matches"))
+        print(f"[INFO] Total rules matched: {matched_rules}")
 
-                for i, line in enumerate(lines):
-                    if line.strip().startswith("att&ck:"):
-                        attack_content = lines[i + 1].strip("- ").strip()
-                        mitre.append(attack_content)
-                        break
+        results_dict = {}
 
-        unique_mitre = []
-        seen = set()
+        for rule, rule_data in results["rules"].items():
+            if not rule_data.get("matches"):
+                continue
 
-        for attack in mitre:
-            if attack not in seen:
-                unique_mitre.append(attack)
-                seen.add(attack)
+            attack_data = rule_data.get("meta", {}).get("attack", [])
+            rule_meta = rule_data.get("meta", {})
+            rule_namespace = rule_meta.get("namespace", "")
+            rule_scope = rule_meta.get("scope", "")
 
-        unique_mitre.sort()
+            rule_description = f"Rule: {rule}"
+            if rule_namespace:
+                rule_description += f" | Namespace: {rule_namespace}"
+            if rule_scope:
+                rule_description += f" | Scope: {rule_scope}"
 
-        results = {}
+            for attack in attack_data:
+                if not isinstance(attack, dict):
+                    continue
 
-        for attack in unique_mitre:
-            parts = attack.split("::", 1)
+                tactic = attack.get("tactic")
+                technique = attack.get("technique")
+                mitre_id = attack.get("id")
 
-            key = parts[0]
-            value = parts[1]
+                if not (tactic and technique and mitre_id):
+                    continue
 
-            technique = value.split()[-1]
-            technique = technique.strip("[]")
-            technique = technique.replace(".", "/")
+                technique_desc = f"{technique} [{mitre_id}]"
+                technique_url = f"https://attack.mitre.org/techniques/{mitre_id.replace('.', '/')}"
 
-            link = f"https://attack.mitre.org/techniques/{technique}"
+                if tactic not in results_dict:
+                    results_dict[tactic] = []
 
-            if key not in results:
-                results[key] = []
+                existing_technique = next(
+                    (tech for tech in results_dict[tactic] 
+                     if tech["techniqueName"] == technique_desc), 
+                    None
+                )
+                
+                if existing_technique:
+                    existing_technique["description"] += f"\n• {rule_description}"
+                else:
+                    results_dict[tactic].append({
+                        "techniqueName": technique_desc,
+                        "url": technique_url,
+                        "description": rule_description
+                    })
 
-            results[key].append({value: link})
+        if results_dict:
+            print(f"[INFO] MITRE ATT&CK techniques extracted: {results_dict}")
+            return results_dict
 
-        if results:
-            return results
+        print("[INFO] No MITRE ATT&CK techniques matched.")
+        return {
+            "info": "Analysis completed successfully but no MITRE ATT&CK techniques found",
+            "rules_matched": matched_rules
+        }
 
-        return {"error": "analysis did not yield any result for the given file"}
-    except:
-        return {"error": "unsupported file format"}
+    except Exception as e:
+        print("[ERROR] Unexpected exception occurred during CAPA run")
+        traceback.print_exc()
+        return {"error": f"Unexpected error: {str(e)}"}

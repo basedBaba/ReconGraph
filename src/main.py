@@ -86,8 +86,10 @@ def scan():
         results["internetdb"] = internetdb(ip_to_scan)
 
     if url_to_scan:
-        results["tranco"] = tranco(url_to_scan) 
-        results["threatfox"] = threatfox(url_to_scan) 
+        results["tranco"] = tranco(url_to_scan)
+        threatfox_result = threatfox(url_to_scan)
+        if threatfox_result:
+            results["threatfox"] = threatfox_result
 
     return jsonify(results)
 
